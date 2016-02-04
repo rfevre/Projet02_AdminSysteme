@@ -46,28 +46,34 @@ sub checkParameter {
 # Lancement du daemon
 sub start {
   die "Démon déjà lancé.\n" if daemonExists();
-  writeLog("Lancement du démon...");
+
+  $pid = fork();
+  if ($pid != 0) {
+    writeLog("Lancement du démon...");
+    exit 0;
+  }
+
   checkPath();
   loadConfig();
-  addLine(".retourVersLeTurfu", "test");
-  print $confs{"dir"},"\n";
-  print $confs{"interval"},"\n";
-  print $confs{"path"},"\n";
-  print "Démon lancé.\n";
+  addLine(".retourVersLeTurfu", $$);
   writeLog("Démon lancé.");
+
+  while (true){
+
+  }
 }
 
 # Arret du daemon
 sub stop {
+  kill(15,readLine(".retourVersLeTurfu")) or die "kill : $!";
   unlink ".retourVersLeTurfu" or die "unlink : $!";
-  print "Démon arrêté.\n";
-  writeLog("Démon arrêté");
+  writeLog("Démon arrêté.");
 }
 
 # Récupération de sauvegarde
 sub backup {
   print "fonction backup à implémenter\n";
-  writeLog("Sauvegarde backupé");
+  writeLog("Sauvegarde backupé.");
 }
 
 # Affiche les logs
@@ -108,7 +114,7 @@ sub loadConfig {
       $confs{"path"}=$list[2];
     }
     close(FIC);
-    writeLog("Configuration chargé");
+    writeLog("Configuration chargé.");
   }
 }
 
@@ -124,7 +130,7 @@ sub writeConfig {
   open(FIC, ">retourVersLeTurfu.conf") or die "open : $!";
   print FIC $chaine;
   close(FIC);
-  writeLog("Configuration modifié");
+  writeLog("Configuration modifié.");
 }
 
 # Vérifie si le démon existe
@@ -133,23 +139,27 @@ sub daemonExists {
 }
 
 # Ecrit dans le fichier de logs
-sub writeLog
-{
-  addLine("retourVersLeTurfu.log","Création fichier de log") if (! -e "retourVersLeTurfu.log");
-  my $line = $_[0];
+sub writeLog {
+  addLine("retourVersLeTurfu.log",dateFormat()." "."Création fichier de log") if (! -e "retourVersLeTurfu.log");
+  my $line = dateFormat()." ".$_[0];
   addLine("retourVersLeTurfu.log", $line);
 }
 
 # Ajoute un ligne à un fichier
-sub addLine
-{
+sub addLine {
   open(FIC, ">>", $_[0]) or die "open : $!";
-  print FIC dateFormat(), " ", $_[1], "\n";
+  print FIC $_[1], "\n";
   close(FIC);
 }
 
 # Met en forme la date
-sub dateFormat
-{
+sub dateFormat {
   return strftime('%Y-%m-%d %H:%M:%S',localtime);
+}
+
+sub readLine {
+  open(FIC, "<", $_[0]) or die "open : $!";
+  my $line = <FIC>;
+  close(FIC);
+  return $line;
 }
