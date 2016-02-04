@@ -20,6 +20,7 @@
 | `stop`    | Arrête le daemon du système de sauvegarde automatique |
 | `backup`  | Permet de récupérer une sauvegarde de manière intéractif |
 | `config`  | Permet de configurer le système de backup |
+| `logs`    | Affiche les logs du programme |
 
 ---
 # Documentation technique :
